@@ -14,6 +14,17 @@ Deck::Deck()
     shuffle();
 }
 
+Card Deck::drawCard()
+{
+    if (isEmpty())
+    {
+        throw std::out_of_range("No cards left in the deck");
+    }
+    Card card = cards.back();
+    cards.pop_back();
+    return card;
+}
+
 void Deck::shuffle()
 {
     std::random_device rd;
