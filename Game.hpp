@@ -30,6 +30,7 @@ private:
     void printPlayerHand() const;
     void findCombinationSum(const std::vector<Card> &cards, int target, int start, std::vector<Card> &combination, std::vector<std::vector<Card>> &result);
     void collectCards(const Card &card);
+    void calculateScore();
 };
 
 #endif // __GAME_HPP__

@@ -10,43 +10,43 @@ std::string Card::toString() const
     switch (rank)
     {
     case Rank::Ace:
-        rankStr = "Ace";
+        rankStr = "1";
         break;
     case Rank::Two:
-        rankStr = "Two";
+        rankStr = "2";
         break;
     case Rank::Three:
-        rankStr = "Three";
+        rankStr = "3";
         break;
     case Rank::Four:
-        rankStr = "Four";
+        rankStr = "4";
         break;
     case Rank::Five:
-        rankStr = "Five";
+        rankStr = "5";
         break;
     case Rank::Six:
-        rankStr = "Six";
+        rankStr = "6";
         break;
     case Rank::Seven:
-        rankStr = "Seven";
+        rankStr = "7";
         break;
     case Rank::Eight:
-        rankStr = "Eight";
+        rankStr = "8";
         break;
     case Rank::Nine:
-        rankStr = "Nine";
+        rankStr = "9";
         break;
     case Rank::Ten:
-        rankStr = "Ten";
+        rankStr = "10";
         break;
     case Rank::Jack:
-        rankStr = "Jack";
+        rankStr = "J";
         break;
     case Rank::Queen:
-        rankStr = "Queen";
+        rankStr = "Q";
         break;
     case Rank::King:
-        rankStr = "King";
+        rankStr = "K";
         break;
     default:
         rankStr = "Unknown";
@@ -56,21 +56,28 @@ std::string Card::toString() const
     switch (suit)
     {
     case Suit::Hearts:
-        suitStr = "Hearts";
+        suitStr = "♥";
         break;
     case Suit::Diamonds:
-        suitStr = "Diamonds";
+        suitStr = "♦";
         break;
     case Suit::Clubs:
-        suitStr = "Clubs";
+        suitStr = "♣";
         break;
     case Suit::Spades:
-        suitStr = "Spades";
+        suitStr = "♠";
         break;
     default:
         suitStr = "Unknown";
         break;
     }
 
-    return rankStr + " of " + suitStr;
+    std::string red = "\033[31m";
+    std::string black = "\033[30m";
+    std::string reset = "\033[0m";
+    std::string bold = "\033[1m";
+
+    std::string color = (suit == Suit::Hearts || suit == Suit::Diamonds) ? red : black;
+
+    return bold + color + rankStr + suitStr + reset;
 }

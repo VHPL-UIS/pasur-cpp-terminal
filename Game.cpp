@@ -20,6 +20,8 @@ void Game::play()
             cpuTurn();
         }
     }
+
+    calculateScore();
 }
 
 void Game::dealCards()
@@ -310,4 +312,23 @@ void Game::collectCards(const Card &card)
             }
         }
     }
+}
+
+void Game::calculateScore()
+{
+    int playerScore = 0;
+    int cpuScore = 0;
+
+    if (playerCollectionCards[Suit::Clubs].size() > 6)
+    {
+        playerScore += 7;
+    }
+
+    if (cpuCollectionCards[Suit::Clubs].size() > 6)
+    {
+        cpuScore += 7;
+    }
+
+    std::cout << "Player Score: " << playerScore << std::endl;
+    std::cout << "CPU Score: " << cpuScore << std::endl;
 }
