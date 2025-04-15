@@ -1,8 +1,8 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 
-SRC = main.cpp Card.cpp Deck.cpp
-HEADERS = Card.hpp Deck.hpp
+SRC = main.cpp Card.cpp Deck.cpp Game.cpp
+HEADERS = Card.hpp Deck.hpp Game.hpp
 OBJ = $(SRC:.cpp=.o)
 TARGET = pasur
 

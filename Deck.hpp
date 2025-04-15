@@ -9,7 +9,7 @@ class Deck
 public:
     Deck();
     void shuffle();
-    Card drawCard();
+    Card drawCard(bool isTableCard = false);
     bool isEmpty() const;
     // void resetDeck();
     const std::vector<Card> &getCards() const { return cards; }

@@ -1,6 +1,7 @@
 #include "Deck.hpp"
 #include <algorithm>
 #include <random>
+#include <stdexcept>
 
 Deck::Deck()
 {
@@ -14,14 +15,26 @@ Deck::Deck()
     shuffle();
 }
 
-Card Deck::drawCard()
+Card Deck::drawCard(bool isTableCard)
 {
     if (isEmpty())
     {
         throw std::out_of_range("No cards left in the deck");
     }
+
     Card card = cards.back();
     cards.pop_back();
+
+    if (isTableCard)
+    {
+        while (card.getRank() == Rank::Jack)
+        {
+            cards.insert(cards.begin(), card);
+            card = cards.back();
+            cards.pop_back();
+        }
+    }
+
     return card;
 }
 

@@ -10,25 +10,26 @@ class Game
 {
 public:
     Game();
-    void start();
+    void play();
 
 private:
     Deck deck;
     std::vector<Card> playerHand;
     std::vector<Card> cpuHand;
     std::vector<Card> tableCards;
-    std::unordered_map<Card::Suit, std::vector<Card>> playerCollectionCards;
-    std::unordered_map<Card::Suit, std::vector<Card>> cpuCollectionCards;
+    std::unordered_map<Suit, std::vector<Card>> playerCollectionCards;
+    std::unordered_map<Suit, std::vector<Card>> cpuCollectionCards;
     // use hash tables for calculating the score
+    bool isPlayerTurn;
+    int round;
 
     void dealCards();
     void playerTurn();
     void cpuTurn();
     void printTableCards() const;
     void printPlayerHand() const;
-    void captureCards();
-    bool isPlayerTurn;
-    int round;
+    void findCombinationSum(const std::vector<Card> &cards, int target, int start, std::vector<Card> &combination, std::vector<std::vector<Card>> &result);
+    void collectCards(const Card &card);
 };
 
 #endif // __GAME_HPP__
