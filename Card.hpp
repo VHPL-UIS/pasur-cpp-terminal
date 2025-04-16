@@ -38,6 +38,10 @@ public:
     Rank getRank() const { return rank; }
     Suit getSuit() const { return suit; }
     std::string toString() const;
+    bool operator==(const Card &other) const
+    {
+        return rank == other.rank && suit == other.suit;
+    }
 };
 
 #endif // __CARD_HPP__

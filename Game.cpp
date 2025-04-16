@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include <iostream>
+#include <algorithm>
 
 Game::Game()
 {
@@ -17,7 +18,9 @@ void Game::play()
         while (!playerHand.empty() && !cpuHand.empty())
         {
             playerTurn();
+            printPlayerCollection();
             cpuTurn();
+            printCpuCollection();
         }
     }
 
@@ -142,6 +145,7 @@ void Game::findCombinationSum(const std::vector<Card> &cards, int target, int st
 
 void Game::collectCards(const Card &card)
 {
+    int collectedCards = 0;
     if (card.getRank() == Rank::Jack)
     {
         if (tableCards.size() < 1)
@@ -154,6 +158,7 @@ void Game::collectCards(const Card &card)
         {
             if (it->getRank() != Rank::Queen && it->getRank() != Rank::King)
             {
+                ++collectedCards;
                 if (isPlayerTurn)
                 {
                     playerCollectionCards[it->getSuit()].push_back(*it);
@@ -169,25 +174,42 @@ void Game::collectCards(const Card &card)
                 ++it;
             }
         }
-    }
-    else if (card.getRank() == Rank::Queen || card.getRank() == Rank::King) // Queen or King
-    {
-        std::vector<Card> multipleCards;
-        for (auto it = tableCards.begin(); it != tableCards.end();)
+
+        if (collectedCards == 0)
         {
-            if (it->getRank() == card.getRank())
+            std::cout << "No cards collected." << std::endl;
+            tableCards.push_back(card);
+            return;
+        }
+        else
+        {
+            if (isPlayerTurn)
             {
-                multipleCards.push_back(*it);
+                playerCollectionCards[card.getSuit()].push_back(card);
             }
             else
             {
-                ++it;
+                cpuCollectionCards[card.getSuit()].push_back(card);
+            }
+            std::cout << "Collected " << collectedCards << " cards." << std::endl;
+        }
+    }
+    else if (card.getRank() == Rank::Queen || card.getRank() == Rank::King)
+    {
+        std::vector<Card> multipleCards;
+        for (auto it = tableCards.begin(); it != tableCards.end(); ++it)
+        {
+            std::cout << card.toString() << std::endl;
+            if (it->getRank() == card.getRank())
+            {
+                multipleCards.push_back(*it);
             }
         }
 
         if (!multipleCards.empty())
         {
             bool hasClub = false;
+            Card findCard = multipleCards[0];
             for (auto it = multipleCards.begin(); it != multipleCards.end();)
             {
                 if (it->getSuit() == Suit::Clubs)
@@ -201,7 +223,7 @@ void Game::collectCards(const Card &card)
                     {
                         cpuCollectionCards[it->getSuit()].push_back(*it);
                     }
-                    it = tableCards.erase(it);
+                    findCard = *it;
                     break;
                 }
                 else
@@ -221,12 +243,29 @@ void Game::collectCards(const Card &card)
                 {
                     cpuCollectionCards[it->getSuit()].push_back(*it);
                 }
-                it = tableCards.erase(it);
             }
-            multipleCards.clear();
-        }
 
-        tableCards.push_back(card);
+            multipleCards.clear();
+
+            auto it = std::find(tableCards.begin(), tableCards.end(), findCard);
+            if (it != tableCards.end())
+            {
+                tableCards.erase(it);
+            }
+
+            if (isPlayerTurn)
+            {
+                playerCollectionCards[card.getSuit()].push_back(card);
+            }
+            else
+            {
+                cpuCollectionCards[card.getSuit()].push_back(card);
+            }
+        }
+        else
+        {
+            tableCards.push_back(card);
+        }
     }
     else // Non-face cards
     {
@@ -310,6 +349,15 @@ void Game::collectCards(const Card &card)
                     }
                 }
             }
+
+            if (isPlayerTurn)
+            {
+                playerCollectionCards[card.getSuit()].push_back(card);
+            }
+            else
+            {
+                cpuCollectionCards[card.getSuit()].push_back(card);
+            }
         }
     }
 }
@@ -331,4 +379,32 @@ void Game::calculateScore()
 
     std::cout << "Player Score: " << playerScore << std::endl;
     std::cout << "CPU Score: " << cpuScore << std::endl;
+}
+
+void Game::printPlayerCollection() const
+{
+    std::cout << "Player Collection: " << std::endl;
+    for (const auto &pair : playerCollectionCards)
+    {
+        std::cout << "Suit: " << static_cast<int>(pair.first) << " Cards: ";
+        for (const auto &card : pair.second)
+        {
+            std::cout << card.toString() << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void Game::printCpuCollection() const
+{
+    std::cout << "CPU Collection: " << std::endl;
+    for (const auto &pair : cpuCollectionCards)
+    {
+        std::cout << "Suit: " << static_cast<int>(pair.first) << " Cards: ";
+        for (const auto &card : pair.second)
+        {
+            std::cout << card.toString() << " ";
+        }
+        std::cout << std::endl;
+    }
 }

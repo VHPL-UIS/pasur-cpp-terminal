@@ -31,6 +31,8 @@ private:
     void findCombinationSum(const std::vector<Card> &cards, int target, int start, std::vector<Card> &combination, std::vector<std::vector<Card>> &result);
     void collectCards(const Card &card);
     void calculateScore();
+    void printPlayerCollection() const;
+    void printCpuCollection() const;
 };
 
 #endif // __GAME_HPP__
