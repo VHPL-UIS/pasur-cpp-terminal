@@ -5,12 +5,25 @@
 #include "Card.hpp"
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
+
+class GameTest;
 
 class Game
 {
+    friend class GameTest;
+
 public:
     Game();
     void play();
+    void clearTable() { tableCards.clear(); }
+    void setPlayerTurn(bool turn) { isPlayerTurn = turn; }
+    void setTableCards(const std::vector<Card> &cards) { tableCards = cards; }
+    const std::unordered_map<Suit, std::vector<Card>> &getPlayerCollection() const { return playerCollectionCards; }
+    bool isCardOnTable(const Card &card) const
+    {
+        return std::find(tableCards.begin(), tableCards.end(), card) != tableCards.end();
+    }
 
 private:
     Deck deck;
