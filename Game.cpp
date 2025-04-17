@@ -176,30 +176,41 @@ void Game::findCombinationSum(const std::vector<Card> &cards, int target, int st
 
 void Game::collectCards(const Card &card)
 {
-    int collectedCards = 0;
+    auto collectCard = [&](const Card &c)
+    {
+        auto &collector = isPlayerTurn ? playerCollectionCards : cpuCollectionCards;
+        collector[c.getSuit()].push_back(c);
+        playerIsFinalHandWinner = isPlayerTurn;
+    };
+
+    auto awardSoor = [&]()
+    {
+        std::cout << "SOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORRRRR" << std::endl;
+        if (isPlayerTurn)
+        {
+            playerExtraScore += 5;
+        }
+        else
+        {
+            cpuExtraScore += 5;
+        }
+    };
+
+    if (tableCards.empty())
+    {
+        tableCards.push_back(card);
+        return;
+    }
+
     if (card.getRank() == Rank::Jack)
     {
-        if (tableCards.size() < 1)
-        {
-            tableCards.push_back(card);
-            return;
-        }
-
+        bool collectedAny = false;
         for (auto it = tableCards.begin(); it != tableCards.end();)
         {
             if (it->getRank() != Rank::Queen && it->getRank() != Rank::King)
             {
-                ++collectedCards;
-                if (isPlayerTurn)
-                {
-                    playerCollectionCards[it->getSuit()].push_back(*it);
-                    playerIsFinalHandWinner = true;
-                }
-                else
-                {
-                    cpuCollectionCards[it->getSuit()].push_back(*it);
-                    playerIsFinalHandWinner = false;
-                }
+                collectCard(*it);
+                collectedAny = true;
                 it = tableCards.erase(it);
             }
             else
@@ -208,99 +219,42 @@ void Game::collectCards(const Card &card)
             }
         }
 
-        if (collectedCards == 0)
+        if (!collectedAny)
         {
             std::cout << "No cards collected." << std::endl;
             tableCards.push_back(card);
-            return;
         }
         else
         {
-            if (isPlayerTurn)
-            {
-                playerCollectionCards[card.getSuit()].push_back(card);
-                playerIsFinalHandWinner = true;
-            }
-            else
-            {
-                cpuCollectionCards[card.getSuit()].push_back(card);
-                playerIsFinalHandWinner = false;
-            }
-            std::cout << "Collected " << collectedCards << " cards." << std::endl;
+            collectCard(card);
         }
     }
     else if (card.getRank() == Rank::Queen || card.getRank() == Rank::King)
     {
-        std::vector<Card> multipleCards;
-        for (auto it = tableCards.begin(); it != tableCards.end(); ++it)
+        std::vector<Card> matches;
+        for (const auto &c : tableCards)
         {
-            if (it->getRank() == card.getRank())
+            if (c.getRank() == card.getRank())
             {
-                multipleCards.push_back(*it);
+                matches.push_back(c);
             }
         }
 
-        if (!multipleCards.empty())
+        if (!matches.empty())
         {
-            bool hasClub = false;
-            Card findCard = multipleCards[0];
-            for (auto it = multipleCards.begin(); it != multipleCards.end();)
+            Card chosen = matches.front();
+            auto clubIt = std::find_if(matches.begin(), matches.end(),
+                                       [](const Card &c)
+                                       { return c.getSuit() == Suit::Clubs; });
+
+            if (clubIt != matches.end())
             {
-                if (it->getSuit() == Suit::Clubs)
-                {
-                    hasClub = true;
-                    if (isPlayerTurn)
-                    {
-                        playerCollectionCards[it->getSuit()].push_back(*it);
-                        playerIsFinalHandWinner = true;
-                    }
-                    else
-                    {
-                        cpuCollectionCards[it->getSuit()].push_back(*it);
-                        playerIsFinalHandWinner = false;
-                    }
-                    findCard = *it;
-                    break;
-                }
-                else
-                {
-                    ++it;
-                }
+                chosen = *clubIt;
             }
 
-            if (!hasClub)
-            {
-                auto it = multipleCards.begin();
-                if (isPlayerTurn)
-                {
-                    playerCollectionCards[it->getSuit()].push_back(*it);
-                    playerIsFinalHandWinner = true;
-                }
-                else
-                {
-                    cpuCollectionCards[it->getSuit()].push_back(*it);
-                    playerIsFinalHandWinner = false;
-                }
-            }
-
-            multipleCards.clear();
-
-            auto it = std::find(tableCards.begin(), tableCards.end(), findCard);
-            if (it != tableCards.end())
-            {
-                tableCards.erase(it);
-            }
-
-            if (isPlayerTurn)
-            {
-                playerCollectionCards[card.getSuit()].push_back(card);
-                playerIsFinalHandWinner = true;
-            }
-            else
-            {
-                cpuCollectionCards[card.getSuit()].push_back(card);
-                playerIsFinalHandWinner = false;
-            }
+            collectCard(chosen);
+            tableCards.erase(std::remove(tableCards.begin(), tableCards.end(), chosen), tableCards.end());
+            collectCard(card);
         }
         else
         {
@@ -309,18 +263,10 @@ void Game::collectCards(const Card &card)
 
         if (tableCards.empty())
         {
-            std::cout << "SOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORRRRR" << std::endl;
-            if (isPlayerTurn)
-            {
-                playerExtraScore += 5;
-            }
-            else
-            {
-                cpuExtraScore += 5;
-            }
+            awardSoor();
         }
     }
-    else // Non-face cards
+    else
     {
         int target = 11 - static_cast<int>(card.getRank());
         std::vector<Card> combination;
@@ -333,103 +279,36 @@ void Game::collectCards(const Card &card)
             tableCards.push_back(card);
             return;
         }
-        else
+
+        size_t choice = 0;
+        if (result.size() > 1)
         {
-            int counter = 0;
-            for (const auto &comb : result)
+            std::cout << "Multiple combinations found. Choose one (1-" << result.size() << "): ";
+            std::cin >> choice;
+            if (choice >= 1 && choice <= result.size())
             {
-                std::cout << "Combination " << ++counter << ": ";
-                for (const auto &c : comb)
-                {
-                    std::cout << c.toString() << " ";
-                }
-                std::cout << std::endl;
-            }
-
-            if (result.size() > 1)
-            {
-                std::cout << "Multiple combinations found. Choose one (1-" << result.size() << "): ";
-                size_t choice;
-                std::cin >> choice;
-                if (choice >= 1 && choice <= result.size())
-                {
-                    for (const auto &c : result[choice - 1])
-                    {
-                        for (auto it = tableCards.begin(); it != tableCards.end();)
-                        {
-                            if (c.getRank() == it->getRank())
-                            {
-                                if (isPlayerTurn)
-                                {
-                                    playerCollectionCards[it->getSuit()].push_back(*it);
-                                    playerIsFinalHandWinner = true;
-                                }
-                                else
-                                {
-                                    cpuCollectionCards[it->getSuit()].push_back(*it);
-                                    playerIsFinalHandWinner = false;
-                                }
-                                it = tableCards.erase(it);
-                            }
-                            else
-                            {
-                                ++it;
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                for (const auto &c : result[0])
-                {
-                    for (auto it = tableCards.begin(); it != tableCards.end();)
-                    {
-                        if (c.getRank() == it->getRank())
-                        {
-                            if (isPlayerTurn)
-                            {
-                                playerCollectionCards[it->getSuit()].push_back(*it);
-                                playerIsFinalHandWinner = true;
-                            }
-                            else
-                            {
-                                cpuCollectionCards[it->getSuit()].push_back(*it);
-                                playerIsFinalHandWinner = false;
-                            }
-                            it = tableCards.erase(it);
-                        }
-                        else
-                        {
-                            ++it;
-                        }
-                    }
-                }
-            }
-
-            if (isPlayerTurn)
-            {
-                playerCollectionCards[card.getSuit()].push_back(card);
-                playerIsFinalHandWinner = true;
-            }
-            else
-            {
-                cpuCollectionCards[card.getSuit()].push_back(card);
-                playerIsFinalHandWinner = false;
+                --choice;
             }
         }
 
+        for (const auto &c : result[choice])
+        {
+            auto it = std::find_if(tableCards.begin(), tableCards.end(),
+                                   [&](const Card &tc)
+                                   { return tc.getRank() == c.getRank(); });
+
+            if (it != tableCards.end())
+            {
+                collectCard(*it);
+                tableCards.erase(it);
+            }
+        }
+
+        collectCard(card);
+
         if (tableCards.empty())
         {
-            std::cout << "SOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORRRRR" << std::endl;
-            if (isPlayerTurn)
-            {
-                playerExtraScore += 5;
-            }
-            else
-            {
-                cpuExtraScore += 5;
-            }
+            awardSoor();
         }
     }
 }
