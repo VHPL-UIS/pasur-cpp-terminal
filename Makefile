@@ -5,7 +5,7 @@ TEST_DIR = tests
 CPPFLAGS += -isystem $(GTEST_DIR)/include -I$(SRC_DIR)
 
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -pthread
+CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -g -pthread
 
 SRC = $(wildcard $(SRC_DIR)/*.cpp)
 OBJ = $(SRC:.cpp=.o)
