@@ -5,6 +5,9 @@
 Game::Game()
 {
     round = 1;
+    playerIsFinalHandWinner = true;
+    playerExtraScore = 0;
+    cpuExtraScore = 0;
 }
 
 void Game::play()
@@ -24,11 +27,28 @@ void Game::play()
         }
     }
 
+    if (!tableCards.empty())
+    {
+        for (const auto &card : tableCards)
+        {
+            if (playerIsFinalHandWinner)
+            {
+                playerCollectionCards[card.getSuit()].push_back(card);
+            }
+            else
+            {
+                cpuCollectionCards[card.getSuit()].push_back(card);
+            }
+        }
+    }
+
     calculateScore();
 }
 
 void Game::dealCards()
 {
+    std::cout << "======>>>>>>> Round " << round << " <<<<<<=======" << std::endl;
+
     if (deck.isEmpty())
     {
         std::cout << "Deck is empty. Cannot deal cards." << std::endl;
@@ -57,7 +77,7 @@ void Game::dealCards()
         }
     }
 
-    ++round;
+    round++;
 }
 
 void Game::printTableCards() const
@@ -74,6 +94,16 @@ void Game::printPlayerHand() const
 {
     std::cout << "Player Hand: ";
     for (const auto &card : playerHand)
+    {
+        std::cout << card.toString() << " ";
+    }
+    std::cout << std::endl;
+}
+
+void Game::printCpuHand() const
+{
+    std::cout << "CPU Hand: ";
+    for (const auto &card : cpuHand)
     {
         std::cout << card.toString() << " ";
     }
@@ -109,6 +139,7 @@ void Game::cpuTurn()
     isPlayerTurn = false;
     std::cout << "CPU's turn." << std::endl;
 
+    printCpuHand();
     printTableCards();
 
     if (cpuHand.empty())
@@ -162,10 +193,12 @@ void Game::collectCards(const Card &card)
                 if (isPlayerTurn)
                 {
                     playerCollectionCards[it->getSuit()].push_back(*it);
+                    playerIsFinalHandWinner = true;
                 }
                 else
                 {
                     cpuCollectionCards[it->getSuit()].push_back(*it);
+                    playerIsFinalHandWinner = false;
                 }
                 it = tableCards.erase(it);
             }
@@ -186,10 +219,12 @@ void Game::collectCards(const Card &card)
             if (isPlayerTurn)
             {
                 playerCollectionCards[card.getSuit()].push_back(card);
+                playerIsFinalHandWinner = true;
             }
             else
             {
                 cpuCollectionCards[card.getSuit()].push_back(card);
+                playerIsFinalHandWinner = false;
             }
             std::cout << "Collected " << collectedCards << " cards." << std::endl;
         }
@@ -199,7 +234,6 @@ void Game::collectCards(const Card &card)
         std::vector<Card> multipleCards;
         for (auto it = tableCards.begin(); it != tableCards.end(); ++it)
         {
-            std::cout << card.toString() << std::endl;
             if (it->getRank() == card.getRank())
             {
                 multipleCards.push_back(*it);
@@ -218,10 +252,12 @@ void Game::collectCards(const Card &card)
                     if (isPlayerTurn)
                     {
                         playerCollectionCards[it->getSuit()].push_back(*it);
+                        playerIsFinalHandWinner = true;
                     }
                     else
                     {
                         cpuCollectionCards[it->getSuit()].push_back(*it);
+                        playerIsFinalHandWinner = false;
                     }
                     findCard = *it;
                     break;
@@ -238,10 +274,12 @@ void Game::collectCards(const Card &card)
                 if (isPlayerTurn)
                 {
                     playerCollectionCards[it->getSuit()].push_back(*it);
+                    playerIsFinalHandWinner = true;
                 }
                 else
                 {
                     cpuCollectionCards[it->getSuit()].push_back(*it);
+                    playerIsFinalHandWinner = false;
                 }
             }
 
@@ -256,15 +294,30 @@ void Game::collectCards(const Card &card)
             if (isPlayerTurn)
             {
                 playerCollectionCards[card.getSuit()].push_back(card);
+                playerIsFinalHandWinner = true;
             }
             else
             {
                 cpuCollectionCards[card.getSuit()].push_back(card);
+                playerIsFinalHandWinner = false;
             }
         }
         else
         {
             tableCards.push_back(card);
+        }
+
+        if (tableCards.empty())
+        {
+            std::cout << "SOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORRRRR" << std::endl;
+            if (isPlayerTurn)
+            {
+                playerExtraScore += 5;
+            }
+            else
+            {
+                cpuExtraScore += 5;
+            }
         }
     }
     else // Non-face cards
@@ -309,10 +362,12 @@ void Game::collectCards(const Card &card)
                                 if (isPlayerTurn)
                                 {
                                     playerCollectionCards[it->getSuit()].push_back(*it);
+                                    playerIsFinalHandWinner = true;
                                 }
                                 else
                                 {
                                     cpuCollectionCards[it->getSuit()].push_back(*it);
+                                    playerIsFinalHandWinner = false;
                                 }
                                 it = tableCards.erase(it);
                             }
@@ -335,10 +390,12 @@ void Game::collectCards(const Card &card)
                             if (isPlayerTurn)
                             {
                                 playerCollectionCards[it->getSuit()].push_back(*it);
+                                playerIsFinalHandWinner = true;
                             }
                             else
                             {
                                 cpuCollectionCards[it->getSuit()].push_back(*it);
+                                playerIsFinalHandWinner = false;
                             }
                             it = tableCards.erase(it);
                         }
@@ -353,10 +410,25 @@ void Game::collectCards(const Card &card)
             if (isPlayerTurn)
             {
                 playerCollectionCards[card.getSuit()].push_back(card);
+                playerIsFinalHandWinner = true;
             }
             else
             {
                 cpuCollectionCards[card.getSuit()].push_back(card);
+                playerIsFinalHandWinner = false;
+            }
+        }
+
+        if (tableCards.empty())
+        {
+            std::cout << "SOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORRRRR" << std::endl;
+            if (isPlayerTurn)
+            {
+                playerExtraScore += 5;
+            }
+            else
+            {
+                cpuExtraScore += 5;
             }
         }
     }
@@ -372,13 +444,42 @@ void Game::calculateScore()
         playerScore += 7;
     }
 
-    if (cpuCollectionCards[Suit::Clubs].size() > 6)
+    for (const auto &pair : playerCollectionCards)
     {
-        cpuScore += 7;
+        for (const auto &card : pair.second)
+        {
+            playerScore += cardScore(card);
+        }
     }
+
+    cpuScore = 20 - playerScore + cpuExtraScore;
+    playerScore += playerExtraScore;
 
     std::cout << "Player Score: " << playerScore << std::endl;
     std::cout << "CPU Score: " << cpuScore << std::endl;
+}
+
+int Game::cardScore(const Card &card)
+{
+    int score = 0;
+    Rank rank = card.getRank();
+    if (rank == Rank::Ace)
+    {
+        score += 1;
+    }
+    else if (rank == Rank::Two && card.getSuit() == Suit::Clubs)
+    {
+        score += 2;
+    }
+    else if (rank == Rank::Ten && card.getSuit() == Suit::Diamonds)
+    {
+        score += 3;
+    }
+    else if (rank == Rank::Jack)
+    {
+        score += 1;
+    }
+    return score;
 }
 
 void Game::printPlayerCollection() const
