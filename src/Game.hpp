@@ -32,6 +32,7 @@ private:
     std::vector<Card> tableCards;
     std::unordered_map<Suit, std::vector<Card>> playerCollectionCards;
     std::unordered_map<Suit, std::vector<Card>> cpuCollectionCards;
+    std::vector<Card> simulatedCpuHand;
     // use hash tables for calculating the score
     bool isPlayerTurn;
     int round;
@@ -46,11 +47,13 @@ private:
     void printPlayerHand() const;
     void printCpuHand() const;
     void findCombinationSum(const std::vector<Card> &cards, int target, int start, std::vector<Card> &combination, std::vector<std::vector<Card>> &result);
-    void collectCards(const Card &card);
+    void collectCards(const Card &card, bool isSimulation = false);
     void calculateScore();
     void printPlayerCollection() const;
     void printCpuCollection() const;
     int cardScore(const Card &card);
+    int evaluateCapturedCards(const Card &dropCard, const std::vector<Card> &cards, const std::vector<Card> &tableCards);
+    void printCards(const std::vector<Card> &cards) const;
 };
 
 #endif // __GAME_HPP__

@@ -2,11 +2,9 @@
 
 Card::Card(Rank r, Suit s) : rank(r), suit(s) {}
 
-std::string Card::toString() const
+std::string Card::rankToString() const
 {
     std::string rankStr;
-    std::string suitStr;
-
     switch (rank)
     {
     case Rank::Ace:
@@ -49,9 +47,23 @@ std::string Card::toString() const
         rankStr = "K";
         break;
     default:
-        rankStr = "Unknown";
+        rankStr = "?";
         break;
     }
+
+    std::string red = "\033[31m";
+    std::string black = "\033[30m";
+    std::string reset = "\033[0m";
+    std::string bold = "\033[1m";
+
+    std::string color = (suit == Suit::Hearts || suit == Suit::Diamonds) ? red : black;
+
+    return bold + color + rankStr + reset;
+}
+
+std::string Card::suitToString() const
+{
+    std::string suitStr;
 
     switch (suit)
     {
@@ -79,5 +91,10 @@ std::string Card::toString() const
 
     std::string color = (suit == Suit::Hearts || suit == Suit::Diamonds) ? red : black;
 
-    return bold + color + rankStr + suitStr + reset;
+    return bold + color + suitStr + reset;
+}
+
+std::string Card::toString() const
+{
+    return rankToString() + suitToString();
 }
