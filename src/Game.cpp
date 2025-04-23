@@ -202,192 +202,29 @@ void Game::findCombinationSum(const std::vector<Card> &cards, int target, int st
 
 void Game::collectCards(const Card &card, bool isSimulation)
 {
-    auto collectCard = [&](const Card &c)
-    {
-        if (isSimulation)
-        {
-            simulatedCpuHand.push_back(c);
-            return;
-        }
-
-        auto &collector = isPlayerTurn ? playerCollectionCards : cpuCollectionCards;
-        collector[c.getSuit()].push_back(c);
-        playerIsFinalHandWinner = isPlayerTurn;
-    };
-
-    auto awardSoor = [&]()
-    {
-        std::cout << "SOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORRRRR" << std::endl;
-        if (isPlayerTurn)
-        {
-            playerExtraScore += 5;
-        }
-        else
-        {
-            cpuExtraScore += 5;
-        }
-    };
-
     if (tableCards.empty() && !isSimulation)
     {
         tableCards.push_back(card);
         return;
     }
 
-    if (card.getRank() == Rank::Jack)
+    switch (card.getRank())
     {
-        bool collectedAny = false;
-        for (auto it = tableCards.begin(); it != tableCards.end();)
-        {
-            if (it->getRank() != Rank::Queen && it->getRank() != Rank::King)
-            {
-                collectCard(*it);
-                collectedAny = true;
-                if (!isSimulation)
-                {
-                    it = tableCards.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-            else
-            {
-                ++it;
-            }
-        }
-
-        if (!collectedAny)
-        {
-            if (!isSimulation)
-            {
-                std::cout << "No cards collected." << std::endl;
-                tableCards.push_back(card);
-            }
-        }
-        else
-        {
-            if (!isSimulation)
-            {
-                collectCard(card);
-            }
-        }
+    case Rank::Jack:
+        handleJack(card, isSimulation);
+        break;
+    case Rank::Queen:
+    case Rank::King:
+        handleQueenKing(card, isSimulation);
+        break;
+    default:
+        handleNumbers(card, isSimulation);
+        break;
     }
-    else if (card.getRank() == Rank::Queen || card.getRank() == Rank::King)
+
+    if (tableCards.empty() && !isSimulation)
     {
-        std::vector<Card> matches;
-        for (const auto &c : tableCards)
-        {
-            if (c.getRank() == card.getRank())
-            {
-                matches.push_back(c);
-            }
-        }
-
-        if (!matches.empty())
-        {
-            Card chosen = matches.front();
-            auto clubIt = std::find_if(matches.begin(), matches.end(),
-                                       [](const Card &c)
-                                       { return c.getSuit() == Suit::Clubs; });
-
-            if (clubIt != matches.end())
-            {
-                chosen = *clubIt;
-            }
-
-            collectCard(chosen);
-            if (!isSimulation)
-            {
-                tableCards.erase(std::remove(tableCards.begin(), tableCards.end(), chosen), tableCards.end());
-                collectCard(card);
-            }
-        }
-        else
-        {
-            if (!isSimulation)
-            {
-                tableCards.push_back(card);
-            }
-        }
-
-        if (tableCards.empty() && !isSimulation)
-        {
-            awardSoor();
-        }
-    }
-    else
-    {
-        int target = 11 - static_cast<int>(card.getRank());
-        std::vector<Card> combination;
-        std::vector<std::vector<Card>> result;
-
-        findCombinationSum(tableCards, target, 0, combination, result);
-
-        if (result.empty())
-        {
-            // std::cout << "No combination found." << std::endl;
-            if (!isSimulation)
-            {
-                tableCards.push_back(card);
-            }
-            return;
-        }
-
-        size_t choice = 0;
-        if (result.size() > 1)
-        {
-            if (isPlayerTurn)
-            {
-                std::cout << "Multiple combinations found. Choose one (1-" << result.size() << "): ";
-                std::cin >> choice;
-            }
-            else
-            {
-                int maxScore = -1;
-                for (size_t i = 0; i < result.size(); ++i)
-                {
-                    int score = evaluateCapturedCards(card, result[i], tableCards);
-                    if (score > maxScore)
-                    {
-                        maxScore = score;
-                        choice = i;
-                    }
-                }
-            }
-
-            if (choice >= 1 && choice <= result.size())
-            {
-                --choice;
-            }
-        }
-
-        for (const auto &c : result[choice])
-        {
-            auto it = std::find_if(tableCards.begin(), tableCards.end(),
-                                   [&](const Card &tc)
-                                   { return tc.getRank() == c.getRank(); });
-
-            if (it != tableCards.end())
-            {
-                collectCard(*it);
-                if (!isSimulation)
-                {
-                    tableCards.erase(it);
-                }
-            }
-        }
-
-        if (!isSimulation)
-        {
-            collectCard(card);
-        }
-
-        if (tableCards.empty() && !isSimulation)
-        {
-            awardSoor();
-        }
+        awardSoor();
     }
 }
 
@@ -557,4 +394,150 @@ void Game::printCards(const std::vector<Card> &cards) const
         }
         std::cout << std::endl;
     }
+}
+
+void Game::handleJack(const Card &card, bool isSimulation)
+{
+    bool collectedAny = false;
+
+    for (auto it = tableCards.begin(); it != tableCards.end();)
+    {
+        if (it->getRank() != Rank::Queen && it->getRank() != Rank::King)
+        {
+            collectCardInternal(*it, isSimulation);
+            collectedAny = true;
+
+            if (!isSimulation)
+                it = tableCards.erase(it);
+            else
+                ++it;
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    if (collectedAny && !isSimulation)
+    {
+        collectCardInternal(card, isSimulation);
+    }
+    else if (!isSimulation)
+    {
+        tableCards.push_back(card);
+    }
+}
+
+void Game::handleQueenKing(const Card &card, bool isSimulation)
+{
+    auto matches = std::vector<Card>();
+    for (const auto &c : tableCards)
+        if (c.getRank() == card.getRank())
+            matches.push_back(c);
+
+    if (!matches.empty())
+    {
+        Card chosen = *std::find_if(matches.begin(), matches.end(), [](const Card &c)
+                                    { return c.getSuit() == Suit::Clubs; });
+
+        collectCardInternal(chosen, isSimulation);
+        if (!isSimulation)
+        {
+            tableCards.erase(std::remove(tableCards.begin(), tableCards.end(), chosen), tableCards.end());
+            collectCardInternal(card, isSimulation);
+        }
+    }
+    else if (!isSimulation)
+    {
+        tableCards.push_back(card);
+    }
+}
+
+void Game::handleNumbers(const Card &card, bool isSimulation)
+{
+    int target = 11 - static_cast<int>(card.getRank());
+    std::vector<Card> combination;
+    std::vector<std::vector<Card>> result;
+
+    findCombinationSum(tableCards, target, 0, combination, result);
+
+    if (result.empty())
+    {
+        if (!isSimulation)
+        {
+            tableCards.push_back(card);
+        }
+        return;
+    }
+
+    size_t choice = 0;
+    if (result.size() > 1)
+    {
+        if (isPlayerTurn)
+        {
+            std::cout << "Multiple combinations found. Choose one (1-" << result.size() << "): ";
+            std::cin >> choice;
+        }
+        else
+        {
+            int maxScore = -1;
+            for (size_t i = 0; i < result.size(); ++i)
+            {
+                int score = evaluateCapturedCards(card, result[i], tableCards);
+                if (score > maxScore)
+                {
+                    maxScore = score;
+                    choice = i;
+                }
+            }
+        }
+
+        if (choice >= 1 && choice <= result.size())
+        {
+            --choice;
+        }
+    }
+
+    for (const auto &c : result[choice])
+    {
+        auto it = std::find_if(tableCards.begin(), tableCards.end(),
+                               [&](const Card &tc)
+                               { return tc.getRank() == c.getRank(); });
+
+        if (it != tableCards.end())
+        {
+            collectCardInternal(*it, isSimulation);
+            if (!isSimulation)
+            {
+                tableCards.erase(it);
+            }
+        }
+    }
+
+    if (!isSimulation)
+    {
+        collectCardInternal(card, isSimulation);
+    }
+}
+
+void Game::collectCardInternal(const Card &c, bool isSimulation)
+{
+    if (isSimulation)
+    {
+        simulatedCpuHand.push_back(c);
+        return;
+    }
+
+    auto &collector = isPlayerTurn ? playerCollectionCards : cpuCollectionCards;
+    collector[c.getSuit()].push_back(c);
+    playerIsFinalHandWinner = isPlayerTurn;
+}
+
+void Game::awardSoor()
+{
+    std::cout << "SOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORRRRR" << std::endl;
+    if (isPlayerTurn)
+        playerExtraScore += 5;
+    else
+        cpuExtraScore += 5;
 }

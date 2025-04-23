@@ -54,6 +54,11 @@ private:
     int cardScore(const Card &card);
     int evaluateCapturedCards(const Card &dropCard, const std::vector<Card> &cards, const std::vector<Card> &tableCards);
     void printCards(const std::vector<Card> &cards) const;
+    void handleJack(const Card &card, bool isSimulation);
+    void handleQueenKing(const Card &card, bool isSimulation);
+    void handleNumbers(const Card &card, bool isSimulation);
+    void collectCardInternal(const Card &c, bool isSimulation);
+    void awardSoor();
 };
 
 #endif // __GAME_HPP__
