@@ -1,6 +1,7 @@
 #include "Game.hpp"
 #include <iostream>
 #include <algorithm>
+#include <string>
 
 Game::Game()
 {
@@ -82,12 +83,19 @@ void Game::dealCards()
 
 void Game::printTableCards() const
 {
-    std::cout << "Table Cards: ";
-    for (const auto &card : tableCards)
+    std::cout << "Table Cards: \n";
+    if (tableCards.size() < 7)
     {
-        std::cout << card.toString() << " ";
+        printCards(tableCards);
     }
-    std::cout << std::endl;
+    else
+    {
+        for (const auto &card : tableCards)
+        {
+            std::cout << card.toString() << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 void Game::printPlayerHand() const
@@ -514,19 +522,30 @@ int Game::evaluateCapturedCards(const Card &dropCard, const std::vector<Card> &c
 
 void Game::printCards(const std::vector<Card> &cards) const
 {
+    if (cards.empty())
+    {
+        std::cout << "No cards to display." << std::endl;
+        return;
+    }
+
     std::vector<std::vector<std::string>> cardLines;
 
     for (const Card &card : cards)
     {
         std::string rankStr = card.rankToString();
         std::string suitStr = card.suitToString();
+        std::string padding = "        ";
+        if (card.getRank() == Rank::Ten)
+        {
+            padding = "       ";
+        }
 
         cardLines.push_back({"┌─────────┐",
-                             "│" + rankStr + "        │",
+                             "│" + rankStr + padding + "│",
                              "│         │",
                              "│    " + suitStr + "    │",
                              "│         │",
-                             "│        " + rankStr + "│",
+                             "│" + padding + rankStr + "│",
                              "└─────────┘"});
     }
 
