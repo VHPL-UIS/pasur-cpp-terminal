@@ -6,7 +6,7 @@ A terminal-based implementation of the traditional Persian card game **Pasur**, 
 
 ## 🃏 Game Overview
 
-Pasur is a two-player card game where players collect cards from the table based on specific rules involving matching ranks or making sums of 11 with number cards. It involves strategy, memory, and a bit of luck.
+Pasur is a two/four-player card game where players collect cards from the table based on specific rules involving matching ranks or making sums of 11 with number cards. It involves strategy, memory, and a bit of luck.
 
 ---
 
