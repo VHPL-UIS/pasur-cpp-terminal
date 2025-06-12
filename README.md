@@ -35,7 +35,7 @@ At the end of the round, players earn points based on their collected cards:
 | **2 of Clubs**         | 2                                     |
 | **Clubs (total = 13)** | If player has ≥ 7, they earn 7 points |
 
-Soor bonus: **+5 points** per successful Soor (table sweep).
+Soor bonus: **+5 points** per successful Soor (table sweep. Doesn't apply to Jack).
 
 ---
 
